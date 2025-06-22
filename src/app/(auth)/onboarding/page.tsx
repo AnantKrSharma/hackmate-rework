@@ -175,7 +175,8 @@ export default function OnboardingForm() {
       router.push('/explore') // Adjust the route as needed
       
     } catch (error) {
-      console.error('Error submitting form:', error)
+      if(error instanceof Error)
+        console.error('Error submitting form:', error.message);
       // Handle error - show message to user
       if (axios.isAxiosError(error)) {
         // Handle specific axios errors
@@ -463,7 +464,7 @@ export default function OnboardingForm() {
               name="contactInfo.email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email (Optional)</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="your@email.com" {...field} value={field.value || ''} />
                   </FormControl>

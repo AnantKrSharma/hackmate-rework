@@ -11,13 +11,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-      <html lang="en">
-        <body>
-            <AuthNavbar/>
-          <main className="pt-16"> 
+    <>
+      <AuthNavbar/>
+      <div className="pt-16"> 
         {children}
-      </main>
-        </body>
-      </html>
+      </div>
+    </>
   )
 }
