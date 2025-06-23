@@ -75,7 +75,10 @@ export default function Explore() {
     refreshFilteredUsers,
     resetViewedProfiles,
     isLoading: isLoadingProfiles
-  } = useProfileFiltering(filters)
+  } = useProfileFiltering({
+  ...filters,
+  userCoordinates: userCoordinates
+});
   
   // Handle starting over
 const handleStartOver = useCallback(async () => {

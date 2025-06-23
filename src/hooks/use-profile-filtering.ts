@@ -105,10 +105,10 @@ export function useProfileFiltering(filters: FilterOptions) {
     
     params.append('enableLocationBasedMatching', filters.enableLocationBasedMatching.toString());
     
-    // Add location parameters if enabled
-    if (filters.enableLocationBasedMatching && filters.coordinates) {
-      params.append('latitude', filters.coordinates.latitude.toString());
-      params.append('longitude', filters.coordinates.longitude.toString());
+    // Add location parameters if enabled - FIXED: Now using userCoordinates passed from parent
+    if (filters.enableLocationBasedMatching && filters.userCoordinates) {
+      params.append('latitude', filters.userCoordinates.latitude.toString());
+      params.append('longitude', filters.userCoordinates.longitude.toString());
       params.append('maxDistance', filters.maxDistance?.toString() || '50');
     }
     
@@ -139,7 +139,7 @@ export function useProfileFiltering(filters: FilterOptions) {
     filters.experienceRange,
     filters.startupStages,
     filters.enableLocationBasedMatching,
-    filters.coordinates,
+    filters.userCoordinates, // FIXED: Changed from filters.coordinates
     filters.maxDistance,
     mutualMatchIds,
     viewedProfileIds
@@ -184,7 +184,7 @@ export function useProfileFiltering(filters: FilterOptions) {
       });
       const data = response.data;
       
-      console.log('Raw users from API:', data.users.map(u => u.id));
+      console.log('Raw users from API:', data.users.map((u: User) => u.id));
       
       // Double client-side filtering to ensure we don't show:
       // 1. Users with mutual matches
@@ -199,7 +199,7 @@ export function useProfileFiltering(filters: FilterOptions) {
         return !isMatch && !isViewed;
       });
       
-      console.log('Filtered users after client-side filtering:', filteredData.map(u => u.id));
+      console.log('Filtered users after client-side filtering:', filteredData.map((u: User) => u.id));
       
       if (resetPage || currentParams !== lastFetchedParams.split('&page=')[0]) {
         setFilteredUsers(filteredData);
@@ -220,7 +220,15 @@ export function useProfileFiltering(filters: FilterOptions) {
     } finally {
       setIsLoading(false);
     }
-  }, [clerkUser?.id, filterParams, page, lastFetchedParams, filteredUsers.length, mutualMatchIds, viewedProfileIds]);
+  }, [
+    clerkUser?.id,
+    filterParams,
+    page,
+    lastFetchedParams,
+    filteredUsers.length,
+    mutualMatchIds,
+    viewedProfileIds
+  ]);
   
   // Mark a profile as viewed
   const markProfileViewed = useCallback(async (viewedId: string) => {
@@ -240,59 +248,68 @@ export function useProfileFiltering(filters: FilterOptions) {
   }, [clerkUser?.id]);
   
   // Reset viewed profiles
- const resetViewedProfiles = useCallback(async () => {
-  if (!clerkUser?.id) return;
-  
-  setIsLoading(true); // Show loading state immediately
-  
-  try {
-    // Clear local state immediately for a responsive UI feel
-    setViewedProfileIds([]);
+  const resetViewedProfiles = useCallback(async () => {
+    if (!clerkUser?.id) return;
     
-    // Make the API call to reset in the background
-    await axios.delete('/api/view', { 
-      data: { userId: clerkUser.id } 
-    });
+    setIsLoading(true); // Show loading state immediately
     
-    // Reset page to 1
-    setPage(1);
-    
-    // Clear filtered users immediately to prevent seeing old results
-    setFilteredUsers([]);
-    
-    // Return a successful promise
-    return Promise.resolve();
-  } catch (err) {
-    console.error('Error resetting viewed profiles:', err);
-    return Promise.reject(err);
-  }
-}, [clerkUser?.id]);
+    try {
+      // Clear local state immediately for a responsive UI feel
+      setViewedProfileIds([]);
+      
+      // Make the API call to reset in the background
+      await axios.delete('/api/view', { 
+        data: { userId: clerkUser.id } 
+      });
+      
+      // Reset page to 1
+      setPage(1);
+      
+      // Clear filtered users immediately to prevent seeing old results
+      setFilteredUsers([]);
+      
+      // Return a successful promise
+      return Promise.resolve();
+    } catch (err) {
+      console.error('Error resetting viewed profiles:', err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [clerkUser?.id]);
   
   // Refresh filtered users - useful when we run out of profiles
   const refreshFilteredUsers = useCallback(async () => {
-  // Clear current filtered users immediately for UI responsiveness
-  setFilteredUsers([]);
-  
-  // Set loading state
-  setIsLoading(true);
-  
-  try {
-    // Run these requests in parallel
-    await Promise.all([
-      fetchMutualMatches(),
-      fetchViewedProfiles()
-    ]);
+    // Clear current filtered users immediately for UI responsiveness
+    setFilteredUsers([]);
     
-    // Then fetch users with the updated filters
-    await fetchUsers(true);
-    return Promise.resolve();
-  } catch (err) {
-    console.error('Error refreshing filtered users:', err);
-    return Promise.reject(err);
-  } finally {
-    setIsLoading(false);
-  }
-}, [fetchMutualMatches, fetchViewedProfiles, fetchUsers]);
+    // Set loading state
+    setIsLoading(true);
+    
+    try {
+      // Run these requests in parallel
+      await Promise.all([
+        fetchMutualMatches(),
+        fetchViewedProfiles()
+      ]);
+      
+      // Then fetch users with the updated filters
+      await fetchUsers(true);
+      return Promise.resolve();
+    } catch (err) {
+      console.error('Error refreshing filtered users:', err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchMutualMatches, fetchViewedProfiles, fetchUsers]);
+  
+  // ADDED: Initial fetch when filters or filterParams change
+  useEffect(() => {
+    if (filterParams) {
+      fetchUsers(true);
+    }
+  }, [filterParams?.toString(), fetchUsers]);
   
   // Load more profiles when nearing the end
   useEffect(() => {
@@ -308,7 +325,7 @@ export function useProfileFiltering(filters: FilterOptions) {
     // Only mark as viewed if user spends at least 5 seconds on a profile
     const timer = setTimeout(() => {
       markProfileViewed(filteredUsers[currentIndex].id);
-    }, 5000);
+    }, 10000);
     
     // Clear the timer if the user changes profiles before the delay
     return () => clearTimeout(timer);

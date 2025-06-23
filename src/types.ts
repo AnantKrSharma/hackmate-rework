@@ -57,8 +57,9 @@ export type FilterOptions = {
   maxDistance?: number
   enableLocationBasedMatching: boolean
   preferencesFromProfile: boolean
-  coordinates?: {
-    latitude: number
-    longitude: number
-  }
+  userCoordinates?: {  // Changed from coordinates to userCoordinates
+    latitude: number;
+    longitude: number;
+    geohash: string;
+  } | null;
 }
