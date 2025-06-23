@@ -16,7 +16,6 @@ import { Button } from './button'
 import { useEffect, useState } from 'react'
 
 export const Navbar = () => {
-  const isAdmin = true // Replace with your actual admin check
   const [scrolled, setScrolled] = useState(false)
   const { isSignedIn } = useUser()
 

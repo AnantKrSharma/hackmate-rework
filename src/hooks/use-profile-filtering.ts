@@ -325,7 +325,7 @@ export function useProfileFiltering(filters: FilterOptions) {
     // Only mark as viewed if user spends at least 5 seconds on a profile
     const timer = setTimeout(() => {
       markProfileViewed(filteredUsers[currentIndex].id);
-    }, 10000);
+    }, 60000);
     
     // Clear the timer if the user changes profiles before the delay
     return () => clearTimeout(timer);
