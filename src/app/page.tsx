@@ -7,19 +7,11 @@ import { ArrowRight, Sparkles, Code, Users, Rocket, MessageSquare, Laptop, Brief
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Navbar } from "@/components/ui/navbar"
 
 export default function LandingPage() {
-  const { isLoaded, isSignedIn } = useUser()
+  const { isSignedIn } = useUser()
   const router = useRouter()
-  
-  // Handle navigation button click
-  const handleNavigation = () => {
-    if (isSignedIn) {
-      router.push('/explore')
-    } else {
-      router.push('/sign-in')
-    }
-  }
   
   // Handle CTA button click
   const handleGetStarted = () => {
@@ -33,22 +25,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
-      <header className="border-b border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">Hackmate</span>
-          </div>
-          
-          <Button 
-            onClick={handleNavigation}
-            variant="ghost"
-            className="font-medium hover:bg-primary/10"
-          >
-            {isLoaded ? (isSignedIn ? 'Go to Explore' : 'Sign In') : 'Loading...'}
-          </Button>
-        </div>
-      </header>
+      <Navbar />
       
       {/* Hero Section */}
       <main className="flex-1">
@@ -70,7 +47,7 @@ export default function LandingPage() {
                 <Button 
                   size="lg"
                   onClick={handleGetStarted}
-                  className="px-8 py-6 text-lg flex items-center gap-2"
+                  className="px-8 py-6 text-lg flex items-center gap-2 hover:cursor-pointer"
                 >
                   Get Started
                   <ArrowRight className="h-5 w-5" />

@@ -42,7 +42,6 @@ export const AuthNavbar = () => {
           <div className="flex items-center space-x-4">
             <ModeToggle />
             <UserButton 
-              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   userButtonAvatarBox: "h-8 w-8 ring-2 ring-primary/20 hover:ring-primary/40 transition-all"

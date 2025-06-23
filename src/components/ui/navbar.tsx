@@ -1,11 +1,11 @@
 'use client'
 
-import { UserButton } from '@clerk/nextjs'
+import { SignInButton, UserButton, useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ModeToggle } from './toggle-button'
-import { Menu, Sparkles } from 'lucide-react'
+import { ChevronDown, House, Menu, ShieldUser, Sparkles, UserRoundPen, UserSearch } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,19 +13,12 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu'
 import { Button } from './button'
-import { Badge } from './badge'
 import { useEffect, useState } from 'react'
 
-const navigation = [
-  { name: 'Explore', href: '/explore' },
-  { name: 'Profile', href: '/profile' },
-  { name: 'Admin', href: '/admin', requiresAdmin: true },
-]
-
 export const Navbar = () => {
-  const pathname = usePathname()
   const isAdmin = true // Replace with your actual admin check
   const [scrolled, setScrolled] = useState(false)
+  const { isSignedIn } = useUser()
 
   // Handle scroll effects
   useEffect(() => {
@@ -41,11 +34,11 @@ export const Navbar = () => {
       className={cn(
         "fixed top-0 z-50 w-full h-16 transition-all duration-200",
         scrolled 
-          ? "bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm" 
-          : "bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm"
+          ? "fixed top-0 w-full border-b z-50  bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm" 
+          : "fixed top-0 w-full border-b z-50  bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm"
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
@@ -57,85 +50,65 @@ export const Navbar = () => {
           </div>
           
           {/* Desktop Navigation */}
-          <div className="hidden sm:flex sm:items-center sm:space-x-6">
-            <div className="flex space-x-6">
-              {navigation.map((item) => {
-                if (item.requiresAdmin && !isAdmin) return null;
-                
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'px-2 py-1 rounded-md text-sm font-medium transition-colors duration-200',
-                      pathname === item.href 
-                        ? 'text-primary bg-primary/10'
-                        : 'text-gray-700 hover:text-primary hover:bg-primary/5 dark:text-gray-200 dark:hover:text-primary'
-                    )}
-                  >
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </div>
+          <div className="flex items-center sm:space-x-6">
+            <div className="flex items-center space-x-2 md:space-x-5">
+              <ModeToggle/>
             
-            <div className="flex items-center space-x-4">
-              <ModeToggle />
-              <UserButton 
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "h-8 w-8 ring-2 ring-primary/20 hover:ring-primary/40 transition-all"
-                  }
-                }}
-              />
-            </div>
-          </div>
+              {isSignedIn ? (
+                <>
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant={'outline'} className='cursor-pointer'>
+                              <Menu className='h-6 w-6 block md:hidden' />
+                              <span className='hidden md:block'> Menu </span>
+                              <ChevronDown className='h-6 w-6 hidden md:block'/>
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="overflow-y-auto [&>*]:text-lg md:[&>*]:text-base [&>*]:hover:cursor-pointer">
+                          {/* <DropdownMenuItem>
+                              <Link href={'/'} className='flex items-center gap-2'>
+                                  <House  className='h-8 w-8 md:h-6 md:w-6'/>
+                                  <span> Home </span>
+                              </Link>
+                          </DropdownMenuItem> */}
+                          <DropdownMenuItem>
+                              <Link href={'/explore'} className='flex items-center gap-2'>
+                                  <UserSearch className='h-8 w-8 md:h-6 md:w-6'/>
+                                  <span> Explore </span>
+                              </Link>
+                          </DropdownMenuItem>          
+                          <DropdownMenuItem>
+                              <Link href={'/profile'} className='flex items-center gap-2'>
+                                  <UserRoundPen className='h-8 w-8 md:h-6 md:w-6'/>
+                                  <span> Profile </span>
+                              </Link>
+                          </DropdownMenuItem>
+                          {isAdmin &&
+                          <DropdownMenuItem>
+                              <Link href={'/admin'} className='flex items-center gap-2'>
+                                  <ShieldUser className='h-8 w-8 md:h-6 md:w-6'/>
+                                  <span> Admin </span>
+                              </Link>
+                          </DropdownMenuItem>}
+                      </DropdownMenuContent>
+                  </DropdownMenu>
 
-          {/* Mobile Navigation */}
-          <div className="sm:hidden flex items-center space-x-4">
-            <ModeToggle />
-            <UserButton 
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: "h-8 w-8"
-                }
-              }}
-            />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px] mt-2">
-                {navigation.map((item) => {
-                  if (item.requiresAdmin && !isAdmin) return null;
-                  
-                  return (
-                    <DropdownMenuItem key={item.name} asChild>
-                      <Link
-                        href={item.href}
-                        className={cn(
-                          'w-full flex items-center py-1.5',
-                          pathname === item.href && 'bg-primary/10 text-primary font-medium'
-                        )}
-                      >
-                        {item.name}
-                        {pathname === item.href && (
-                          <Badge variant="secondary" className="ml-auto py-0 px-1.5 text-xs">Active</Badge>
-                        )}
-                      </Link>
-                    </DropdownMenuItem>
-                  )
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <UserButton appearance={{
+                    elements: {
+                      avatarBox: 'w-10 h-10',
+                      userButtonPopoverCard: 'shadow-xl',
+                      userButtonMainIdentifier: 'font-semibold',
+                    }
+                  }}
+                  />
+                </>
+                ) : (
+                  <SignInButton>
+                    <Button variant={'outline'} className='cursor-pointer'> Sign In </Button>
+                  </SignInButton>
+                )
+              }
+            </div>
           </div>
         </div>
       </div>
