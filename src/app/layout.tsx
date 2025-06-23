@@ -29,7 +29,10 @@ export default function RootLayout({
   return (
     <ClerkProvider appearance={{
       baseTheme: dark,
-    }}>
+    }}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+    >
       <html lang="en" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <ThemeProvider

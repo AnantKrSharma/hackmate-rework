@@ -30,9 +30,9 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <div>
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-                  <span className="text-primary block">Find your perfect</span>
-                  <span className="block">co-founder match</span>
+                <h1 className="text-3xl md:text-6xl font-extrabold tracking-tight">
+                  <span className="text-primary block">Find Your Perfect</span>
+                  <span className="block">Co-Founder Match</span>
                 </h1>
                 <p className="mt-6 text-lg text-gray-600 dark:text-gray-400">
                   A swipe-based platform connecting founders and builders with their ideal collaborators. 
@@ -54,7 +54,7 @@ export default function LandingPage() {
                   size="lg"
                   variant="outline"
                   onClick={() => router.push('/about')}
-                  className="px-8 py-6 text-lg"
+                  className="px-8 py-6 text-lg hover:cursor-pointer"
                 >
                   Learn More
                 </Button>
