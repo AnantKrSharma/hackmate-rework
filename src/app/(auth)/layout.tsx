@@ -12,7 +12,6 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <AuthNavbar/>
       <div className="pt-16"> 
         {children}
       </div>

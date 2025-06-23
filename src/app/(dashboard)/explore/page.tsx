@@ -39,6 +39,8 @@ export default function Explore() {
       setIsLoadingUser(true);
       try {
         const response = await axios.get(`/api/user/${clerkUser.id}`);
+        console.log("CLERK "+clerkUser.id);
+        
         setCurrentUser(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -180,7 +182,7 @@ const handleStartOver = useCallback(async () => {
   }
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto px-4">
       {!isDesktop && (
         <MobileFilterSheet 
           open={filterOpen} 

@@ -4,6 +4,7 @@ import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/theme-provider'
 import { dark } from '@clerk/themes';
+import { Navbar } from '@/components/ui/navbar'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,8 +37,12 @@ export default function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
-          >
-            {children}
+          > 
+            <Navbar />
+
+            <div className='mt-5 md:mt-2'>
+              {children}
+            </div>
           </ThemeProvider>
         </body>
       </html>

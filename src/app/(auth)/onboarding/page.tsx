@@ -95,7 +95,7 @@ const domainOptions = [
 
 export default function OnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const {  user } = useUser();
+  const { user } = useUser();
   const router = useRouter()
   
   const form = useForm<FormValues>({

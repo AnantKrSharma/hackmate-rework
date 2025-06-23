@@ -24,9 +24,6 @@ export default function LandingPage() {
   
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navigation */}
-      <Navbar />
-      
       {/* Hero Section */}
       <main className="flex-1">
         <div className="container mx-auto px-4 py-12 md:py-24">

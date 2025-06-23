@@ -82,13 +82,6 @@ export const Navbar = () => {
                                   <span> Profile </span>
                               </Link>
                           </DropdownMenuItem>
-                          {isAdmin &&
-                          <DropdownMenuItem>
-                              <Link href={'/admin'} className='flex items-center gap-2'>
-                                  <ShieldUser className='h-8 w-8 md:h-6 md:w-6'/>
-                                  <span> Admin </span>
-                              </Link>
-                          </DropdownMenuItem>}
                       </DropdownMenuContent>
                   </DropdownMenu>
 
