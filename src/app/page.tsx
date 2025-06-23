@@ -24,6 +24,8 @@ export default function LandingPage() {
   
   return (
     <div className="min-h-screen flex flex-col">
+      <Navbar />
+      
       {/* Hero Section */}
       <main className="flex-1">
         <div className="container mx-auto px-4 py-12 md:py-24">
@@ -39,7 +41,7 @@ export default function LandingPage() {
                   No social profiles, no fluff. Just raw experience, aligned intent, and mutual interest.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg"

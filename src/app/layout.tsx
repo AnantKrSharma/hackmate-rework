@@ -30,6 +30,7 @@ export default function RootLayout({
     <ClerkProvider appearance={{
       baseTheme: dark,
     }}
+      
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
     >
@@ -41,8 +42,6 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           > 
-            <Navbar />
-
             <div className='mt-5 md:mt-2'>
               {children}
             </div>

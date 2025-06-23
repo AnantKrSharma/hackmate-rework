@@ -2,10 +2,9 @@
 
 import { SignInButton, UserButton, useUser } from '@clerk/nextjs'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ModeToggle } from './toggle-button'
-import { ChevronDown, House, Menu, ShieldUser, Sparkles, UserRoundPen, UserSearch } from 'lucide-react'
+import { ChevronDown, Menu, Sparkles, UserRoundPen, UserSearch } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +14,7 @@ import {
 import { Button } from './button'
 import { useEffect, useState } from 'react'
 
-export const Navbar = () => {
+export const Navbar = ({ showSignIn = true }: { showSignIn?: boolean }) => {
   const [scrolled, setScrolled] = useState(false)
   const { isSignedIn } = useUser()
 
@@ -95,6 +94,7 @@ export const Navbar = () => {
                   />
                 </>
                 ) : (
+                  showSignIn &&
                   <SignInButton>
                     <Button variant={'outline'} className='cursor-pointer'> Sign In </Button>
                   </SignInButton>
