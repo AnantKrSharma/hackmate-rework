@@ -672,7 +672,7 @@ export default function OnboardingForm() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="startupInfo.lookingFor"
               render={({ field }) => (
@@ -700,7 +700,7 @@ export default function OnboardingForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
           </div>
 
           <Button type="submit" className="w-full hover:cursor-pointer" disabled={isSubmitting}>

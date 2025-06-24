@@ -191,7 +191,7 @@ const handleStartOver = useCallback(async () => {
   }
 
   return (
-    <div className="container mx-auto my-auto lg:pt-6 px-4">
+    <div className="container mx-auto my-auto lg:pt-6 px-4 space-y-3">
       {!isDesktop && (
         <MobileFilterSheet 
           open={filterOpen} 

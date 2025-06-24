@@ -766,7 +766,7 @@ export default function ProfileEditForm() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="startupInfo.lookingFor"
               render={({ field }) => (
@@ -794,7 +794,7 @@ export default function ProfileEditForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
           </div>
 
           <div className="flex space-x-4">
