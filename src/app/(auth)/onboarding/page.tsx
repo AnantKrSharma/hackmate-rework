@@ -197,7 +197,7 @@ export default function OnboardingForm() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-8 mt-14">
+    <div className="max-w-3xl mx-auto p-6 space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Complete Your Profile</h1>
         <p className="text-gray-500 dark:text-gray-400">
