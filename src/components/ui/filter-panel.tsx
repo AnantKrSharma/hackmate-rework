@@ -106,8 +106,8 @@ export default function FilterPanel({
   }
   
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-7">
+      {/* <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Switch 
             id="use-profile-prefs"
@@ -135,10 +135,10 @@ export default function FilterPanel({
           </Label>
         </div>
         {isLoadingPreferences && <Loader2 className="h-4 w-4 animate-spin" />}
-      </div>
+      </div> */}
       
       {/* Location Filter */}
-      <div className="space-y-4">
+      {/* <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-medium">Location</h3>
           <div className="flex items-center space-x-2">
@@ -189,7 +189,7 @@ export default function FilterPanel({
             </div>
           </div>
         )}
-      </div>
+      </div> */}
       
       {/* Experience Range */}
       <div className="space-y-4">

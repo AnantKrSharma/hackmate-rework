@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/theme-provider'
 import { dark } from '@clerk/themes';
 import { Navbar } from '@/components/ui/navbar'
+import { Toaster } from 'sonner'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -42,6 +43,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           > 
+            <Toaster 
+              richColors 
+              theme='dark' //tweak for light/dark mode
+            />
+
             <div className='mt-5 md:mt-2'>
               {children}
             </div>

@@ -69,7 +69,7 @@ const formSchema = z.object({
     stage: z.enum(['IDEA', 'MVP', 'SCALING', 'EXITED']),
     goals: z.string().min(50, "Please describe your startup goals in detail"),
     commitment: z.enum(['EXPLORING', 'BUILDING', 'LAUNCHING', 'FULL_TIME_READY']),
-    lookingFor: z.array(z.string()).min(1, "Select what you're looking for"),
+    lookingFor: z.array(z.string()).min(1, "Select what you're looking for").optional(),
   }).optional(),
   contactInfo: z.object({
     email: z.string().email("Please enter a valid email").optional(),
@@ -190,7 +190,7 @@ export default function ProfileEditForm() {
     fetchUserData();
   }, [user?.id, form]);
 
-    async function onSubmit(values: FormValues) {
+  async function onSubmit(values: FormValues) {
     if (!user?.id) return;
     
     setIsSubmitting(true);
