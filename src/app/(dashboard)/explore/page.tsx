@@ -20,6 +20,7 @@ import EmptyState from '../../../components/ui/empty-state'
 import NoMoreProfilesState from '../../../components/ui/no-more-profiles-state'
 import MatchDialog from '../../../components/ui/match-dialogue'
 import PaginationControls from '../../../components/ui/pagination-controls'
+import { toast } from 'sonner'
 
 
 export default function Explore() {
@@ -43,7 +44,14 @@ export default function Explore() {
         
         setCurrentUser(response.data);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        if(error instanceof Error){
+          toast.error('Error while fetching user data');
+          console.error('Error while fetching user data:', error.message);
+        }
+        else{
+          toast.error('Error while fetching user data');
+          console.log('Error while fetching user data:', error);
+        }
       } finally {
         setIsLoadingUser(false);
       }
@@ -97,6 +105,7 @@ const handleStartOver = useCallback(async () => {
       refreshFilteredUsers()
     ]);
   } catch (error) {
+    toast.error('Error while starting over');
     console.error('Error starting over:', error);
   } finally {
     setIsRefreshingProfiles(false);
@@ -182,7 +191,7 @@ const handleStartOver = useCallback(async () => {
   }
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 mt-3">
       {!isDesktop && (
         <MobileFilterSheet 
           open={filterOpen} 

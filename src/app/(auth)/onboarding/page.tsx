@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select"
 import { X, Plus } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
+import { toast } from "sonner"
 
 // Constants for file upload
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -169,21 +170,26 @@ export default function OnboardingForm() {
         },
       })
       
-      console.log('Profile created successfully:', response.data)
+      console.log('Profile created: ', response.data)
       
       // Redirect to another page or show success message
+      toast.success('Profile created successfully')
       router.push('/explore') // Adjust the route as needed
       
     } catch (error) {
-      if(error instanceof Error)
+      if(error instanceof Error){
         console.error('Error submitting form:', error.message);
+        toast.error('Error submitting form')
+      }
       // Handle error - show message to user
-      if (axios.isAxiosError(error)) {
+      else if (axios.isAxiosError(error)) {
         // Handle specific axios errors
         const errorMessage = error.response?.data?.message || 'Failed to create profile'
-        alert(errorMessage) // Consider using a toast or other UI component
+        console.log(errorMessage);
+        toast.error('An unexpected error occurred');
       } else {
-        alert('An unexpected error occurred')
+        console.log(error);
+        toast.error('An unexpected error occurred');
       }
     } finally {
       setIsSubmitting(false)

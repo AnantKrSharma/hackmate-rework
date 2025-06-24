@@ -22,9 +22,9 @@ export default function FilterSidebar({
   handleFilterChange
 }: FilterSidebarProps) {
   return (
-    <div className="w-1/3 bg-card rounded-lg border p-6">
-      <h2 className="text-xl font-semibold mb-6">Filters</h2>
-      <ScrollArea className="h-[calc(100vh-280px)]">
+    <div className="w-1/3 bg-card rounded-lg border p-4">
+      <h2 className="text-2xl font-semibold mb-6">Filters</h2>
+      <ScrollArea className="h-[calc(100vh-300px)] p-3">
         <FilterPanel 
           filters={filters}
           isLoadingPreferences={isLoadingPreferences}

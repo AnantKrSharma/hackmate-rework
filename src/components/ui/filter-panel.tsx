@@ -308,7 +308,7 @@ export default function FilterPanel({
         </div>
       </div>
       
-      <div className="flex justify-between pt-4">
+      <div className="flex items-center justify-between [&>*]:hover:cursor-pointer">
         <Button 
           variant="outline" 
           onClick={() => {
@@ -317,9 +317,9 @@ export default function FilterPanel({
         >
           Reset Filters
         </Button>
-        {!isDesktop && onClose && (
+        {/* {!isDesktop && onClose && ( */}
           <Button onClick={onClose}>Apply Filters</Button>
-        )}
+        {/* )} */}
       </div>
     </div>
   )
