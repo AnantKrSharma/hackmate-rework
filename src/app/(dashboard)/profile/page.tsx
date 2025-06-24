@@ -22,6 +22,7 @@ import { Edit, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useUser } from "@clerk/nextjs"
 import axios from 'axios'
+import { toast } from 'sonner'
 
 type Project = {
   id: string
@@ -88,6 +89,7 @@ export default function Profile() {
       setError(null);
     } catch (err) {
       console.error('Error fetching user data:', err);
+      toast.error('Error fetching user data');
       setError('Failed to load profile data');
     } finally {
       setLoading(false);

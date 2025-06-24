@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { toast } from 'sonner'
 
 type Report = {
   id: string
@@ -105,6 +106,7 @@ export default function Admin() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error deleting user:', error)
+      toast.error('Error deleting user')
     } finally {
       setIsLoading(false)
     }
@@ -119,6 +121,7 @@ export default function Admin() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error dismissing report:', error)
+      toast.error('Error dismissing report')
     } finally {
       setIsLoading(false)
     }

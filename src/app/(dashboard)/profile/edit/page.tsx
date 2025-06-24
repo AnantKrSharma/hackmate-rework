@@ -29,6 +29,7 @@ import {
 import { X, Plus, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { useUser } from "@clerk/nextjs"
+import { toast } from "sonner"
 
 // Constants for file upload
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -179,6 +180,7 @@ export default function ProfileEditForm() {
         setError(null);
       } catch (err) {
         console.error('Error fetching user data:', err);
+        toast.error('Error fetching user data');
         setError('Failed to load your profile data. Please try again.');
       } finally {
         setIsLoading(false);
@@ -231,6 +233,7 @@ export default function ProfileEditForm() {
       });
       
       console.log('Profile updated successfully:', response.data);
+      toast.success('Profile updated successfully');
       
       // Redirect to profile page
       router.push('/profile');
@@ -239,9 +242,9 @@ export default function ProfileEditForm() {
       console.error('Error updating profile:', error);
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to update profile';
-        alert(errorMessage);
+        toast.error(errorMessage);
       } else {
-        alert('An unexpected error occurred');
+        toast.error('An unexpected error occurred');
       }
     } finally {
       setIsSubmitting(false);
