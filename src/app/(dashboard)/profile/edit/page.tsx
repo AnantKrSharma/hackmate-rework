@@ -268,7 +268,11 @@ export default function ProfileEditForm() {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
           <p className="text-red-700 dark:text-red-400">{error}</p>
         </div>
-        <Button onClick={() => router.push('/profile')}>Return to Profile</Button>
+        <Button onClick={() => router.push('/profile')}
+                className="hover:cursor-pointer"  
+        >
+          Return to Profile
+        </Button>
       </div>
     );
   }
@@ -628,6 +632,7 @@ export default function ProfileEditForm() {
                 variant="outline"
                 size="sm"
                 onClick={() => append({ name: '', description: '', link: '' })}
+                className="hover:cursor-pointer"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Project
@@ -684,6 +689,7 @@ export default function ProfileEditForm() {
                   variant="ghost"
                   size="icon"
                   onClick={() => remove(index)}
+                  className="hover:cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -795,7 +801,7 @@ export default function ProfileEditForm() {
             <Button type="button" variant="outline" onClick={() => router.push('/profile')}>
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            <Button type="submit" className="flex-1 hover:cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

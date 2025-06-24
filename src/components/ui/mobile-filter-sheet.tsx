@@ -39,7 +39,7 @@ export default function MobileFilterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="gap-2 mt-3">
+        <Button variant="outline" className="gap-2 mt-3 hover:cursor-pointer">
           <Filter className="h-4 w-4" />
           Filters
         </Button>
@@ -66,7 +66,9 @@ export default function MobileFilterSheet({
         </ScrollArea>
         
         {/* <SheetFooter className="mt-4">
-          <Button onClick={() => onOpenChange(false)}>Apply Filters</Button>
+          <Button onClick={() => onOpenChange(false)} className='hover:cursor-pointer'>
+            Apply Filters
+          </Button>
         </SheetFooter> */}
       </SheetContent>
     </Sheet>

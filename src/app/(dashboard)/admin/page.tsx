@@ -182,6 +182,7 @@ export default function Admin() {
                         setSelectedReport(report)
                         setIsDialogOpen(true)
                       }}
+                      className='hover:cursor-pointer'
                     >
                       Review
                     </Button>
@@ -240,6 +241,7 @@ export default function Admin() {
                     variant="outline"
                     onClick={() => handleDismissReport(selectedReport.id)}
                     disabled={isLoading}
+                    className='hover:cursor-pointer'
                   >
                     Dismiss Report
                   </Button>
@@ -247,6 +249,7 @@ export default function Admin() {
                     variant="destructive"
                     onClick={() => handleDeleteUser(selectedReport.reportedId)}
                     disabled={isLoading}
+                    className='hover:cursor-pointer'
                   >
                     Delete User
                   </Button>

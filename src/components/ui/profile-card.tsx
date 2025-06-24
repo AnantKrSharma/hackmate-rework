@@ -285,7 +285,7 @@ export default function ProfileCard({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="w-full"
+                    className="w-full hover:cursor-pointer"
                     onClick={() => window.open(activeUser.calendarLink, '_blank')}
                   >
                     <Calendar className="h-4 w-4 mr-2" />
@@ -298,6 +298,7 @@ export default function ProfileCard({
                     <Button
                       variant="outline"
                       size="sm"
+                      className='hover:cursor-pointer'
                       onClick={() => window.open(`mailto:${activeUser.email}`, '_blank')}
                     >
                       <Mail className="h-4 w-4 mr-2" />
@@ -313,7 +314,7 @@ export default function ProfileCard({
             <Button 
               size="icon" 
               variant="outline" 
-              className="h-14 w-14 rounded-full bg-background shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-300 transition-colors"
+              className="hover:cursor-pointer h-14 w-14 rounded-full bg-background shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-300 transition-colors"
               onClick={handlePass}
             >
               <X className="h-6 w-6 text-destructive" />
@@ -321,7 +322,7 @@ export default function ProfileCard({
             
             <Button 
               size="icon" 
-              className="h-14 w-14 rounded-full shadow-md hover:bg-green-600 transition-colors"
+              className="hover:cursor-pointer h-14 w-14 rounded-full shadow-md hover:bg-green-600 transition-colors"
               onClick={handleLike}
             >
               <Heart className="h-6 w-6" />

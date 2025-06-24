@@ -314,11 +314,16 @@ export default function FilterPanel({
           onClick={() => {
             handleFilterChange(DEFAULT_FILTERS)
           }}
+          className="hover:cursor-pointer"
         >
           Reset Filters
         </Button>
         {/* {!isDesktop && onClose && ( */}
-          <Button onClick={onClose}>Apply Filters</Button>
+          <Button onClick={onClose}
+                  className="hover:cursor-pointer"
+          >
+            Apply Filters
+          </Button>
         {/* )} */}
       </div>
     </div>

@@ -21,6 +21,7 @@ export default function PaginationControls({
         size="sm"
         onClick={onPrevious}
         disabled={currentIndex === 0}
+        className="hover:cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
         Previous
@@ -31,6 +32,7 @@ export default function PaginationControls({
         size="sm"
         onClick={onNext}
         disabled={currentIndex === totalCount - 1}
+        className="hover:cursor-pointer"
       >
         Next
         <ChevronRight className="h-4 w-4 ml-2" />

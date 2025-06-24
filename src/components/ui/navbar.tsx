@@ -56,7 +56,7 @@ export const Navbar = ({ showSignIn = true }: { showSignIn?: boolean }) => {
                 <>
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                          <Button variant={'outline'} className='cursor-pointer'>
+                          <Button variant={'outline'} className='hover:cursor-pointer'>
                               <Menu className='h-6 w-6 block md:hidden' />
                               <span className='hidden md:block'> Menu </span>
                               <ChevronDown className='h-6 w-6 hidden md:block'/>
@@ -96,7 +96,7 @@ export const Navbar = ({ showSignIn = true }: { showSignIn?: boolean }) => {
                 ) : (
                   showSignIn &&
                   <SignInButton>
-                    <Button variant={'outline'} className='cursor-pointer'> Sign In </Button>
+                    <Button variant={'outline'} className='hover:cursor-pointer'> Sign In </Button>
                   </SignInButton>
                 )
               }

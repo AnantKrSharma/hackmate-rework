@@ -538,6 +538,7 @@ export default function OnboardingForm() {
                 variant="outline"
                 size="sm"
                 onClick={() => append({ name: '', description: '', link: '' })}
+                className="hover:cursor-pointer"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Project
@@ -594,6 +595,7 @@ export default function OnboardingForm() {
                   variant="ghost"
                   size="icon"
                   onClick={() => remove(index)}
+                  className="hover:cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -701,7 +703,7 @@ export default function OnboardingForm() {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full hover:cursor-pointer" disabled={isSubmitting}>
             {isSubmitting ? "Creating Profile..." : "Complete Profile"}
           </Button>
         </form>

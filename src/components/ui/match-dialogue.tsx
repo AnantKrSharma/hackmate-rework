@@ -131,7 +131,7 @@ export default function MatchDialog({
             {contactInfo?.scheduleUrl && (
               <Button
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto hover:cursor-pointer"
                 onClick={() => window.open(contactInfo.scheduleUrl, '_blank')}
               >
                 <Calendar className="mr-2 h-4 w-4" />
@@ -144,7 +144,7 @@ export default function MatchDialog({
         <DialogFooter className="pt-2">
           <Button 
             variant="secondary" 
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto hover:cursor-pointer"
             onClick={() => onOpenChange(false)}
           >
             Continue Swiping

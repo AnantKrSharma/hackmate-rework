@@ -116,7 +116,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <p className="text-center">{error}</p>
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-4 hover:cursor-pointer">
               <Button onClick={() => fetchUserData(clerkUser!.id)}>
                 Try Again
               </Button>
@@ -136,7 +136,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <p className="text-center">You have not completed your profile yet.</p>
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-4 hover:cursor-pointer">
               <Button onClick={() => router.push('/onboarding')}>
                 Complete Your Profile
               </Button>
@@ -148,13 +148,13 @@ export default function Profile() {
   }
 
   return (
-    <div className="container sm:mx-3 md:mx-auto border py-10">
+    <div className="container sm:mx-3 md:mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Profile</h1>
         <Button 
           onClick={() => router.push('/profile/edit')}
           variant="outline"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 hover:cursor-pointer"
         >
           <Edit className="h-4 w-4" />
           Edit Profile
@@ -349,7 +349,7 @@ export default function Profile() {
           </DialogHeader>
           {selectedProject?.link && (
             <div className="mt-4">
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className='hover:cursor-pointer'>
                 <a href={selectedProject.link} target="_blank" rel="noopener noreferrer">
                   View Project
                 </a>

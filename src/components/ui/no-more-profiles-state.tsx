@@ -19,7 +19,7 @@ export default function NoMoreProfilesState({
         You have seen all available profiles matching your current filters.
       </p>
       <div className="flex flex-wrap gap-4 justify-center">
-        <Button onClick={onStartOver} disabled={isRefreshing}>
+        <Button onClick={onStartOver} disabled={isRefreshing} className='hover:cursor-pointer'>
           {isRefreshing ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -29,7 +29,7 @@ export default function NoMoreProfilesState({
             'Start Over'
           )}
         </Button>
-        <Button onClick={onAdjustFilters} variant="outline">
+        <Button onClick={onAdjustFilters} variant="outline" className='hover:cursor-pointer'>
           Adjust Filters
         </Button>
       </div>

@@ -17,7 +17,7 @@ export default function EmptyState({ onAdjustFilters }: EmptyStateProps) {
       </p>
       <Button 
         variant="outline" 
-        className="mt-6"
+        className="mt-6 hover:cursor-pointer"
         onClick={onAdjustFilters}
       >
         Adjust Filters
