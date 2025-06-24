@@ -98,7 +98,7 @@ export default function Profile() {
 
   if (loading || !clerkLoaded) {
     return (
-      <div className="container mx-auto py-20 flex justify-center items-center">
+      <div className="container mx-2 py-20 flex justify-center items-center">
         <div className="text-center">
           <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4 text-primary" />
           <p>Loading profile...</p>
@@ -109,7 +109,7 @@ export default function Profile() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-20">
+      <div className="container mx-2 py-20">
         <Card>
           <CardHeader>
             <CardTitle className="text-center text-red-500">Error</CardTitle>
@@ -129,7 +129,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="container mx-auto py-20">
+      <div className="container mx-2 py-20">
         <Card>
           <CardHeader>
             <CardTitle className="text-center">Profile Not Found</CardTitle>
@@ -148,7 +148,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container sm:mx-3 md:mx-auto border py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Profile</h1>
         <Button 
