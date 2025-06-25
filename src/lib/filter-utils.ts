@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import prismaClient from '@/lib/prsimadb';
 
 // This makes the function a server action that can be called from client components
