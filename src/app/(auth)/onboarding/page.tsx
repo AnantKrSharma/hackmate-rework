@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useFieldArray, useForm } from "react-hook-form"
 import * as z from "zod"
 import axios from "axios" // Add axios import
-import { useState } from "react" // For loading state
+import { useEffect, useState } from "react" // For loading state
 import { useRouter } from "next/navigation" // For navigation after submission
 import { Button } from "@/components/ui/button"
 import {
@@ -29,6 +30,8 @@ import {
 import { X, Plus } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
 import { toast } from "sonner"
+import { uploadOnCloudinary } from '@/lib/cloudinary';
+
 
 // Constants for file upload
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -39,10 +42,13 @@ const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   avatar: z
     .custom<FileList>()
-    .refine((files) => files?.length === 1, "Image is required")
-    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, "Max file size is 5MB")
+    .refine((files) => !files || files.length === 0 || files.length === 1, "Only one image is allowed")
     .refine(
-      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      (files) => !files || files.length === 0 || files[0].size <= MAX_FILE_SIZE,
+      "Max file size is 5MB"
+    )
+    .refine(
+      (files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files[0].type),
       "Only .jpg, .jpeg, .png and .webp formats are supported"
     )
     .optional(),
@@ -97,7 +103,38 @@ const domainOptions = [
 export default function OnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useUser();
+  const userId = user?.id;
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+
+
+
+   useEffect(() => {
+    // Check if user exists and has completed onboarding
+    if (userId) {
+      const checkUserProfile = async () => {
+        try {
+          const response = await axios.get(`/api/user/${userId}`);
+          // If user profile exists, redirect to explore page
+          if (response.data) {
+            router.push('/explore');
+          }
+        } catch (error) {
+          // If 404, it means profile doesn't exist yet, so stay on onboarding
+          // For other errors, we still allow onboarding to continue
+          console.log('User needs to complete onboarding');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      checkUserProfile();
+    } else {
+      setIsLoading(false);
+    }
+  }, [userId, router]);
+
+
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -129,18 +166,21 @@ export default function OnboardingForm() {
 
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true)
+
     
     try {
       // Create FormData object for multipart/form-data submission
       const formData = new FormData()
+      let avatarUrl: string | undefined;
+
       
       // Add avatar file if it exists
       if (values.avatar?.[0]) {
-        formData.append('avatar', values.avatar[0])
+          const uploadResult = await uploadOnCloudinary(values.avatar[0]);
+          avatarUrl = uploadResult.secure_url;
       }
       
-      // Generate a unique ID for the user
-      const userId = user?.id;
+
       
       // Prepare the user data object
       const userData = {
@@ -157,7 +197,8 @@ export default function OnboardingForm() {
         skills: values.skills,
         pastProjects: values.pastProjects,
         startupInfo: values.startupInfo,
-        contactInfo: values.contactInfo
+        contactInfo: values.contactInfo,
+        avatarUrl: avatarUrl,
       }
       
       // Add the userData as a JSON string
@@ -195,6 +236,13 @@ export default function OnboardingForm() {
       setIsSubmitting(false)
     }
   }
+
+    if (isLoading) {
+    return <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+    </div>;
+  }
+  
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-8">

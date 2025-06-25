@@ -1,4 +1,3 @@
-import { AuthNavbar } from '@/components/ui/auth-navbar';
 import { Navbar } from '@/components/ui/navbar';
 import { type Metadata } from 'next'
 

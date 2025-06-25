@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import prismaClient from '@/lib/prsimadb';
 import { z } from 'zod';
-import fs from 'node:fs/promises';
-import path from 'path';
-import { uploadOnCloudinary } from '@/lib/cloudinary';
 
 // Define the request body schema for updates
 const userUpdateSchema = z.object({ 
   id: z.string(),
   name: z.string().min(2),
   description: z.string().min(50, { message: "Tell us a bit more about yourself (min 50 characters)" }).optional(),
+  avatarUrl: z.string().url().optional(),
   location: z.string(),
   personalityTags: z.array(z.string()),
   workingStyle: z.enum(['ASYNC', 'REAL_TIME', 'FLEXIBLE', 'STRUCTURED']),
@@ -110,9 +108,6 @@ export async function PUT(request: Request) {
     // Process as multipart form data
     const formData = await request.formData();
     
-    // Get the avatar file if it exists
-    const avatarFile = formData.get('avatar') as File | null;
-    
     // Parse the JSON data from the form
     const userData = JSON.parse(formData.get('userData') as string);
     
@@ -144,41 +139,7 @@ export async function PUT(request: Request) {
       }, { status: 404 });
     }
 
-    let cloudLink = existingUser.avatarUrl || "";
     
-    // Handle file upload if avatar is provided
-    if (avatarFile) {
-      try {
-        // Create directory for user uploads
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'avatars', userId);
-        await fs.mkdir(uploadDir, { recursive: true });
-        
-        // Get file extension
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `avatar.${fileExt}`;
-        
-        // Convert File to Buffer
-        const arrayBuffer = await avatarFile.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        
-        // Save file to disk
-        const filePath = path.join(uploadDir, fileName);
-        await fs.writeFile(filePath, buffer);
-        
-        console.log(`File saved locally at: ${filePath}`);
-        
-        // Upload to Cloudinary and get the secure URL
-        const cloudResponse = await uploadOnCloudinary(filePath);
-        if (cloudResponse && cloudResponse.secure_url) {
-          cloudLink = cloudResponse.secure_url;
-          console.log(`Uploaded to Cloudinary: ${cloudLink}`);
-        } else {
-          console.error('Cloudinary upload failed');
-        }
-      } catch (fileError) {
-        console.error('Error handling file upload:', fileError);
-      }
-    }
     
     try {
       // Update user with transaction
@@ -188,8 +149,8 @@ export async function PUT(request: Request) {
           where: { id: userId },
           data: {
             name: validatedData.name,
+            avatarUrl: validatedData.avatarUrl,
             description: validatedData.description,
-            avatarUrl: cloudLink,
             location: validatedData.location,
             personalityTags: validatedData.personalityTags,
             workingStyle: validatedData.workingStyle,

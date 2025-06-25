@@ -5,7 +5,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetFooter
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Filter } from "lucide-react"
@@ -17,7 +16,6 @@ interface MobileFilterSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   filters: FilterOptions
-  isLoadingPreferences: boolean
   userCoordinates: { latitude: number; longitude: number; geohash: string } | null
   isSavingLocation: boolean
   locationPermissionRequested: boolean
@@ -29,7 +27,6 @@ export default function MobileFilterSheet({
   open,
   onOpenChange,
   filters,
-  isLoadingPreferences,
   userCoordinates,
   isSavingLocation,
   locationPermissionRequested,
@@ -55,7 +52,6 @@ export default function MobileFilterSheet({
         <ScrollArea className="px-1 sm:px-2">
           <FilterPanel 
             filters={filters}
-            isLoadingPreferences={isLoadingPreferences}
             userCoordinates={userCoordinates}
             isSavingLocation={isSavingLocation}
             locationPermissionRequested={locationPermissionRequested}

@@ -4,7 +4,6 @@ import { FilterOptions } from '../../types'
 
 interface FilterSidebarProps {
   filters: FilterOptions
-  isLoadingPreferences: boolean
   userCoordinates: { latitude: number; longitude: number; geohash: string } | null
   isSavingLocation: boolean
   locationPermissionRequested: boolean
@@ -14,7 +13,6 @@ interface FilterSidebarProps {
 
 export default function FilterSidebar({
   filters,
-  isLoadingPreferences,
   userCoordinates,
   isSavingLocation,
   locationPermissionRequested,
@@ -27,7 +25,6 @@ export default function FilterSidebar({
       <ScrollArea className="h-[calc(100vh-300px)] p-3">
         <FilterPanel 
           filters={filters}
-          isLoadingPreferences={isLoadingPreferences}
           userCoordinates={userCoordinates}
           isSavingLocation={isSavingLocation}
           locationPermissionRequested={locationPermissionRequested}

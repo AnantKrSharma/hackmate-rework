@@ -30,6 +30,8 @@ import { X, Plus, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { useUser } from "@clerk/nextjs"
 import { toast } from "sonner"
+import { uploadOnCloudinary } from '@/lib/cloudinary';
+
 
 // Constants for file upload
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -198,10 +200,13 @@ export default function ProfileEditForm() {
     try {
       // Create FormData object for multipart/form-data submission
       const formData = new FormData();
+      let avatarUrl: string | undefined;
+
       
       // Add avatar file if it exists
       if (values.avatar?.[0]) {
-        formData.append('avatar', values.avatar[0]);
+          const uploadResult = await uploadOnCloudinary(values.avatar[0]);
+          avatarUrl = uploadResult.secure_url;
       }
       
       // Prepare the user data object
@@ -219,7 +224,8 @@ export default function ProfileEditForm() {
         skills: values.skills,
         pastProjects: values.pastProjects,
         startupInfo: values.startupInfo,
-        contactInfo: values.contactInfo
+        contactInfo: values.contactInfo,
+        avatarUrl: avatarUrl,
       };
       
       // Add the userData as a JSON string

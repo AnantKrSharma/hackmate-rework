@@ -4,9 +4,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prismaClient from '@/lib/prsimadb';
 import { z } from 'zod';
-import fs from 'node:fs/promises';
-import path from 'path';
-import { uploadOnCloudinary } from '@/lib/cloudinary';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { 
   getViewedProfiles, 
@@ -367,9 +364,6 @@ export async function POST(request: Request) {
     // Process as multipart form data
     const formData = await request.formData();
     
-    // Get the avatar file if it exists
-    const avatarFile = formData.get('avatar') as File | null;
-    
     // Parse the JSON data from the form
     const userData = JSON.parse(formData.get('userData') as string);
     
@@ -391,40 +385,6 @@ export async function POST(request: Request) {
       }, { status: 409 });
     }
 
-    let cloudLink = "";
-    // Handle file upload if avatar is provided
-    if (avatarFile) {
-      try {
-        // Create directory for user uploads
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'avatars', id);
-        await fs.mkdir(uploadDir, { recursive: true });
-        
-        // Get file extension
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `avatar.${fileExt}`;
-        
-        // Convert File to Buffer
-        const arrayBuffer = await avatarFile.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        
-        // Save file to disk
-        const filePath = path.join(uploadDir, fileName);
-        await fs.writeFile(filePath, buffer);
-        
-        console.log(`File saved locally at: ${filePath}`);
-        
-        // Upload to Cloudinary and get the secure URL
-        const cloudResponse = await uploadOnCloudinary(filePath);
-        if (cloudResponse) {
-          cloudLink = cloudResponse.secure_url;
-          console.log(`Uploaded to Cloudinary: ${cloudLink}`);
-        } else {
-          console.error('Cloudinary upload failed');
-        }
-      } catch (fileError) {
-        console.error('Error handling file upload:', fileError);
-      }
-    }
     
     try {
       // Create a new user
@@ -436,7 +396,7 @@ export async function POST(request: Request) {
             id,
             name: validatedData.name,
             description : validatedData.description,
-            avatarUrl: cloudLink,
+            avatarUrl: validatedData.avatarUrl,
             location: validatedData.location,
             personalityTags: validatedData.personalityTags,
             workingStyle: validatedData.workingStyle,

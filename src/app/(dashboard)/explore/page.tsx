@@ -70,7 +70,6 @@ export default function Explore() {
   
   const {
     filters,
-    isLoadingPreferences,
     handleFilterChange
   } = useUserPreferences()
   
@@ -133,7 +132,7 @@ const handleStartOver = useCallback(async () => {
 
   // Render logic
   const renderMainContent = () => {
-    if (isLoadingUser || isLoadingPreferences || isLoadingProfiles || isRefreshingProfiles) {
+    if (isLoadingUser|| isLoadingProfiles || isRefreshingProfiles) {
       return <LoadingState />
     }
 
@@ -197,7 +196,6 @@ const handleStartOver = useCallback(async () => {
           open={filterOpen} 
           onOpenChange={setFilterOpen}
           filters={filters}
-          isLoadingPreferences={isLoadingPreferences}
           userCoordinates={userCoordinates}
           isSavingLocation={isSavingLocation}
           locationPermissionRequested={locationPermissionRequested}
@@ -214,7 +212,6 @@ const handleStartOver = useCallback(async () => {
         {isDesktop && (
           <FilterSidebar 
             filters={filters}
-            isLoadingPreferences={isLoadingPreferences}
             userCoordinates={userCoordinates}
             isSavingLocation={isSavingLocation}
             locationPermissionRequested={locationPermissionRequested}

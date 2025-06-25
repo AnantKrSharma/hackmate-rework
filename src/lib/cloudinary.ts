@@ -1,29 +1,17 @@
-import {v2 as cloudinary} from 'cloudinary';
-// import fs from "fs"          
+export const uploadOnCloudinary = async (file: File) => {
+  const sigRes = await fetch('/api/sign-upload');
+  const { signature, timestamp, apiKey, cloudName } = await sigRes.json();
 
-cloudinary.config({ 
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-    api_key: process.env.CLOUDINARY_API_KEY, 
-    api_secret: process.env.CLOUDINARY_API_SECRET 
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', timestamp);
+  formData.append('signature', signature);
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+    method: 'POST',
+    body: formData,
   });
-  
-  const uploadOnCloudinary = async (localFilePath : string) => {
-      try {
-          if (!localFilePath) return null
-          const response = await cloudinary.uploader.upload(localFilePath, {
-              resource_type: "auto"
-          })
-         // uncomment for development server only
-        //   fs.unlinkSync(localFilePath);
-          return response;
-  
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        //   fs.unlinkSync(localFilePath)
-          return null;
-      }
-  }
-  
-  
-  
-  export {uploadOnCloudinary}
+
+  return await uploadRes.json(); // contains secure_url, public_id, etc.
+};

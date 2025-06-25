@@ -29,13 +29,13 @@ export const COMMITMENT_LEVEL_LABELS = {
 }
 
 export const DEFAULT_USER_PREFERENCES = {
-  workingStyle: "FLEXIBLE" as WorkingStyle,
-  collaborationPref: "HYBRID" as CollaborationPref,
-  skills: ["React", "TypeScript", "UI/UX Design"],
-  domainExpertise: ["SaaS", "FinTech"],
-  location: "San Francisco, CA",
-  enableLocationBasedMatching: true,
-  maxDistance: 50,
+  workingStyle: "" as WorkingStyle,
+  collaborationPref: "" as CollaborationPref,
+  skills: [],
+  domainExpertise: [],
+  location: "",
+  enableLocationBasedMatching: false,
+  maxDistance: 5,
 }
 
 export const DEFAULT_FILTERS: FilterOptions = {

@@ -6,21 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Slider } from "@/components/ui/slider"
-import { Switch } from '@/components/ui/switch'
-import { Loader2, MapPin } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { FilterOptions, WorkingStyle, CollaborationPref, StartupStage } from '../../types'
 import { 
   WORKING_STYLE_LABELS, 
   COLLABORATION_PREF_LABELS, 
   STARTUP_STAGE_LABELS, 
   DEFAULT_FILTERS,
-  DEFAULT_USER_PREFERENCES 
 } from '../../constants'
 import { fetchAvailableSkillsAndDomains } from '@/lib/filter-utils'
 
 interface FilterPanelProps {
   filters: FilterOptions
-  isLoadingPreferences: boolean
   userCoordinates: { latitude: number; longitude: number; geohash: string } | null
   isSavingLocation: boolean
   locationPermissionRequested: boolean
@@ -32,14 +29,8 @@ interface FilterPanelProps {
 
 export default function FilterPanel({
   filters,
-  isLoadingPreferences,
-  userCoordinates,
-  isSavingLocation,
-  locationPermissionRequested,
-  requestLocationPermission,
   handleFilterChange,
   onClose,
-  isDesktop = false
 }: FilterPanelProps) {
   // State for skills and domains
   const [allSkills, setAllSkills] = useState<string[]>([])
