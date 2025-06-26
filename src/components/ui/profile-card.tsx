@@ -16,10 +16,7 @@ import {
   Briefcase,
   Clock,
   Users,
-  Calendar,
   ExternalLink,
-  MessageCircle,
-  Mail,
   AlertCircle,
 } from "lucide-react"
 import { User } from '../../types'
@@ -51,7 +48,6 @@ export default function ProfileCard({
   nopeOpacity,
   handleLike,
   handlePass,
-  isMatch
 }: ProfileCardProps) {
   if (!activeUser) return null;
   
@@ -274,40 +270,7 @@ export default function ProfileCard({
               </TabsContent>
             </Tabs>
             
-            {/* Only show contact info if there's a match */}
-            {isMatch && (
-              <div className="space-y-3 pt-3 border-t mt-3">
-                <h3 className="text-sm font-medium flex items-center">
-                  <MessageCircle className="h-4 w-4 mr-1" /> Contact Info
-                </h3>
-                
-                {activeUser.calendarLink && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="w-full hover:cursor-pointer"
-                    onClick={() => window.open(activeUser.calendarLink, '_blank')}
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Schedule Meeting
-                  </Button>
-                )}
-                
-                <div className="flex flex-wrap gap-2">
-                  {activeUser.email && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className='hover:cursor-pointer'
-                      onClick={() => window.open(`mailto:${activeUser.email}`, '_blank')}
-                    >
-                      <Mail className="h-4 w-4 mr-2" />
-                      <span>Email</span>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
+            
           </CardContent>
           
           <CardFooter className="flex justify-center gap-4 p-4 pt-0">

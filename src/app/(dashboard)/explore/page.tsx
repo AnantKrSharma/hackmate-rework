@@ -19,7 +19,7 @@ import LoadingState from '../../../components/ui/loading-state'
 import EmptyState from '../../../components/ui/empty-state'
 import NoMoreProfilesState from '../../../components/ui/no-more-profiles-state'
 import MatchDialog from '../../../components/ui/match-dialogue'
-import PaginationControls from '../../../components/ui/pagination-controls'
+// import PaginationControls from '../../../components/ui/pagination-controls'
 import { toast } from 'sonner'
 
 
@@ -168,7 +168,7 @@ const handleStartOver = useCallback(async () => {
           isMatch={matches.includes(filteredUsers[currentIndex].id)}
         />
         
-        <PaginationControls 
+        {/* <PaginationControls 
           currentIndex={currentIndex}
           totalCount={filteredUsers.length}
           onPrevious={() => {
@@ -184,7 +184,7 @@ const handleStartOver = useCallback(async () => {
             }
             x.set(0)
           }}
-        />
+        /> */}
       </>
     )
   }
