@@ -83,7 +83,8 @@ export default function Explore() {
     setMatches,
     refreshFilteredUsers,
     resetViewedProfiles,
-    isLoading: isLoadingProfiles
+    isLoading: isLoadingProfiles,
+    viewCurrentProfile
   } = useProfileFiltering({
   ...filters,
   userCoordinates: userCoordinates
@@ -127,7 +128,8 @@ const handleStartOver = useCallback(async () => {
     matches, 
     setMatches, 
     setSelectedMatch, 
-    setMatchDialogOpen
+    setMatchDialogOpen,
+    viewCurrentProfile
   )
 
   // Render logic

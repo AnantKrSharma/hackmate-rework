@@ -13,7 +13,8 @@ export function useSwipeActions(
   matches: string[],
   setMatches: (matches: string[]) => void,
   setSelectedMatch: (user: User | null) => void,
-  setMatchDialogOpen: (open: boolean) => void
+  setMatchDialogOpen: (open: boolean) => void,
+  viewCurrentProfile: () => void // Add the viewCurrentProfile parameter
 ) {
   const {user} = useUser()
 
@@ -31,11 +32,8 @@ export function useSwipeActions(
     if (!activeUser) return
     
     try {
-      // First mark profile as viewed regardless of like outcome
-      await axios.post('/api/view', {
-        userId: user?.id,
-        viewedId: activeUser.id
-      });
+      // Mark profile as viewed using the provided function
+      viewCurrentProfile();
       
       // Call the API to register the like
       const response = await axios.post('/api/like', {
@@ -72,39 +70,36 @@ export function useSwipeActions(
   
   // Handle pass action
   const handlePass = async () => {
-  if (!activeUser) return
-  
-  try {
-    // First mark profile as viewed regardless of pass outcome
-    await axios.post('/api/view', {
-      userId: user?.id,
-      viewedId: activeUser.id
-    });
+    if (!activeUser) return
     
-    // Call the API to register the pass
-    await axios.post('/api/unlike', {
-      userId: user?.id,
-      unlikedUserId: activeUser.id
-    })
-    
-    // Animate card off screen
-    x.set(-500)
-    
-    // Move to next user after animation
-    setTimeout(() => {
-      if (currentIndex < totalUsers - 1) {
-        setCurrentIndex(currentIndex + 1)
-      } else {
-        setCurrentIndex(totalUsers) // Show empty state
-      }
-      x.set(0) // Reset for next card
-    }, 300)
-    
-  } catch (error) {
-    console.error('Error passing profile:', error)
-    x.set(0) // Reset on error
+    try {
+      // Mark profile as viewed using the provided function
+      viewCurrentProfile();
+      
+      // Call the API to register the pass
+      await axios.post('/api/unlike', {
+        userId: user?.id,
+        unlikedUserId: activeUser.id
+      })
+      
+      // Animate card off screen
+      x.set(-500)
+      
+      // Move to next user after animation
+      setTimeout(() => {
+        if (currentIndex < totalUsers - 1) {
+          setCurrentIndex(currentIndex + 1)
+        } else {
+          setCurrentIndex(totalUsers) // Show empty state
+        }
+        x.set(0) // Reset for next card
+      }, 300)
+      
+    } catch (error) {
+      console.error('Error passing profile:', error)
+      x.set(0) // Reset on error
+    }
   }
-}
   
   return {
     x,

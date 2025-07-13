@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prismaClient from '@/lib/prsimadb';
 import { z } from 'zod';
+import { addViewedProfile, redisClient } from '@/lib/redis';
 
 // Define schema for unlike request
 const unlikeSchema = z.object({
@@ -13,6 +14,22 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { userId, unlikedUserId } = unlikeSchema.parse(body);
+
+    // Create a cache key for this operation to prevent duplicates
+    const cacheKey = `unlike:${userId}:${unlikedUserId}`;
+    
+    // Check if this operation was recently performed (debounce)
+    const recentlyProcessed = await redisClient.get(cacheKey);
+    if (recentlyProcessed) {
+      console.log('Debounced: Unlike operation recently processed');
+      return NextResponse.json({
+        success: true,
+        message: 'Profile already marked as passed',
+      });
+    }
+    
+    // Set a temporary marker to prevent duplicate requests (30 second TTL)
+    await redisClient.set(cacheKey, '1', { EX: 30 });
 
     // Find any existing like from this user to the unliked user
     const existingLike = await prismaClient.match.findFirst({
@@ -30,6 +47,12 @@ export async function POST(req: NextRequest) {
           id: existingLike.id,
         },
       });
+
+      // Track this profile as viewed in Redis cache
+      await addViewedProfile(userId, unlikedUserId);
+
+      // Clear the temporary marker
+      await redisClient.del(cacheKey);
 
       return NextResponse.json({
         success: true,
@@ -53,7 +76,20 @@ export async function POST(req: NextRequest) {
             userBId: unlikedUserId,
           },
         });
+        
+        // Also track this profile as viewed in Redis cache for faster future lookups
+        await addViewedProfile(userId, unlikedUserId);
+        
+        // Invalidate relevant user list caches that might need to exclude this viewed profile
+        const cachePattern = `users:fullset:*userId*${userId}*excludeViewed*true*`;
+        const keys = await redisClient.keys(cachePattern);
+        if (keys.length > 0) {
+          await redisClient.del(keys);
+        }
       }
+
+      // Clear the temporary marker
+      await redisClient.del(cacheKey);
 
       return NextResponse.json({
         success: true,

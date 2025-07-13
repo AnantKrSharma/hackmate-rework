@@ -3,6 +3,11 @@
 import { NextResponse } from 'next/server';
 import prismaClient from '@/lib/prsimadb';
 import { z } from 'zod';
+import { 
+  cacheUserProfile, 
+  getCachedUserProfile, 
+  redisClient 
+} from '@/lib/redis';
 
 // Define the request body schema for updates
 const userUpdateSchema = z.object({ 
@@ -48,11 +53,67 @@ export async function GET(
       return new NextResponse('ID is required', { status: 400 });
     }
 
-    if (!userId) {
-      return NextResponse.json({ error: 'no userId provided' }, { status: 401 });
+    // Add caching headers
+    const headers = new Headers();
+    headers.set('Cache-Control', 'public, max-age=60, s-maxage=120'); // Cache for 1 minute browser, 2 minutes CDN
+    headers.set('Vary', 'Accept, Cookie'); // Vary cache by these headers
+    
+    // Try to get user from Redis cache first
+    const cachedUser = await getCachedUserProfile(userId);
+    
+    if (cachedUser) {
+      console.log('Cache hit: Returning cached user profile');
+      
+      // Get related data from cache
+      const cachedRelations = {
+        pastProjects: [],
+        startupInfo: null,
+        contactInfo: null
+      };
+      
+      try {
+        // Get projects from cache
+        if (cachedUser.pastProjects) {
+          cachedRelations.pastProjects = JSON.parse(cachedUser.pastProjects);
+        }
+        
+        // Get startup info from cache
+        if (cachedUser.startupInfo) {
+          cachedRelations.startupInfo = JSON.parse(cachedUser.startupInfo);
+        }
+        
+        // Get contact info from cache
+        if (cachedUser.contactInfo) {
+          cachedRelations.contactInfo = JSON.parse(cachedUser.contactInfo);
+        }
+        
+        // Assemble full user object
+        const formattedUser = {
+          id: cachedUser.id,
+          name: cachedUser.name,
+          description: cachedUser.description,
+          avatarUrl: cachedUser.avatarUrl,
+          location: cachedUser.location,
+          personalityTags: JSON.parse(cachedUser.personalityTags || '[]'),
+          workingStyle: cachedUser.workingStyle,
+          collaborationPref: cachedUser.collaborationPref,
+          currentRole: cachedUser.currentRole,
+          yearsExperience: parseInt(cachedUser.yearsExperience || '0'),
+          domainExpertise: JSON.parse(cachedUser.domainExpertise || '[]'),
+          skills: JSON.parse(cachedUser.skills || '[]'),
+          ...cachedRelations
+        };
+        
+        return NextResponse.json(formattedUser, { headers });
+      } catch (parseError) {
+        console.error('Error parsing cached user data:', parseError);
+        // Continue to fetch from database if parsing fails
+      }
     }
     
-    // Fetch the user and all related data
+    console.log('Cache miss: Fetching user from database');
+    
+    // Fetch the user and all related data from the database
     const user = await prismaClient.user.findUnique({
       where: { id: userId },
       include: {
@@ -72,7 +133,7 @@ export async function GET(
             lookingFor: true
           }
         },
-        contactInfo : {
+        contactInfo: {
           select: {
             id: true,
             email: true,
@@ -88,7 +149,10 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     
-    return NextResponse.json(user);
+    // Cache the user profile for future requests
+    await cacheUserProfile(user);
+    
+    return NextResponse.json(user, { headers });
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json(
@@ -124,25 +188,39 @@ export async function PUT(request: Request) {
     // Validate user data
     const validatedData = userUpdateSchema.parse(userData);
 
-    // Check if user exists
-    const existingUser = await prismaClient.user.findUnique({
-      where: { id: userId },
-      include: {
-        pastProjects: true,
-        startupInfo: true,
-        contactInfo: true
+    // Check if user exists - try Redis first for a faster check
+    const cachedUser = await getCachedUserProfile(userId);
+    let existingUser;
+    
+    if (cachedUser) {
+      // If in cache, we know the user exists, but still need the full profile
+      existingUser = await prismaClient.user.findUnique({
+        where: { id: userId },
+        include: {
+          pastProjects: true,
+          startupInfo: true,
+          contactInfo: true
+        }
+      });
+    } else {
+      // If not in cache, we need to check if the user exists
+      existingUser = await prismaClient.user.findUnique({
+        where: { id: userId },
+        include: {
+          pastProjects: true,
+          startupInfo: true,
+          contactInfo: true
+        }
+      });
+      
+      if (!existingUser) {
+        return NextResponse.json({ 
+          error: 'User not found', 
+          message: 'The user you are trying to update does not exist' 
+        }, { status: 404 });
       }
-    });
-
-    if (!existingUser) {
-      return NextResponse.json({ 
-        error: 'User not found', 
-        message: 'The user you are trying to update does not exist' 
-      }, { status: 404 });
     }
 
-    
-    
     try {
       // Update user with transaction
       const updatedUser = await prismaClient.$transaction(async (tx) => {
@@ -271,6 +349,30 @@ export async function PUT(request: Request) {
         return user;
       });
 
+      // Update user profile in Redis cache
+      const updatedUserWithRelations = await prismaClient.user.findUnique({
+        where: { id: userId },
+        include: {
+          pastProjects: true,
+          startupInfo: true,
+          contactInfo: true
+        }
+      });
+      
+      // Cache the updated user profile
+      if (updatedUserWithRelations) {
+        await cacheUserProfile(updatedUserWithRelations);
+      }
+      
+      // Invalidate any related user list caches
+      const cachePatterns = ['users:*', 'users:fullset:*'];
+      for (const pattern of cachePatterns) {
+        const keys = await redisClient.keys(pattern);
+        if (keys.length > 0) {
+          await redisClient.del(keys);
+        }
+      }
+
       return NextResponse.json(updatedUser, { status: 200 });
     } catch (dbError) {
       console.error('Database operation error:', dbError);
@@ -295,12 +397,19 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    // Check if user exists
-    const existingUser = await prismaClient.user.findUnique({
-      where: { id: userId }
-    });
+    // Check if user exists - try Redis first for a faster check
+    const cachedUser = await getCachedUserProfile(userId);
+    let userExists = cachedUser !== null;
+    
+    // If not found in Redis, check the database
+    if (!userExists) {
+      const existingUser = await prismaClient.user.findUnique({
+        where: { id: userId }
+      });
+      userExists = existingUser !== null;
+    }
 
-    if (!existingUser) {
+    if (!userExists) {
       return NextResponse.json({ 
         error: 'User not found', 
         message: 'The user you are trying to delete does not exist' 
@@ -311,6 +420,18 @@ export async function DELETE(request: Request) {
     await prismaClient.user.delete({
       where: { id: userId }
     });
+
+    // Delete user from Redis cache
+    await redisClient.del(`user:${userId}`);
+    
+    // Invalidate any related user list caches
+    const cachePatterns = ['users:*', 'users:fullset:*'];
+    for (const pattern of cachePatterns) {
+      const keys = await redisClient.keys(pattern);
+      if (keys.length > 0) {
+        await redisClient.del(keys);
+      }
+    }
 
     return NextResponse.json({ message: 'User deleted successfully' }, { status: 200 });
   } catch (error) {

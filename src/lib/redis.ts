@@ -16,9 +16,9 @@ await redisClient.connect();
 // Default TTL values (in seconds)
 const DEFAULT_TTL = {
   USER_PROFILE: 3600, // 1 hour
-  VIEWED_PROFILES: 2592000, // 30 days
-  LIKES: 2592000, // 30 days
-  MATCHES: 2592000 // 30 days
+  VIEWED_PROFILES: 3600, // 1 hour
+  LIKES: 3600, // 1 hour
+  MATCHES: 3600 // 1 hour
 };
 
 // User likes functions
@@ -44,21 +44,29 @@ export async function getNextMatch(userId: string): Promise<string | null> {
 
 // User profile cache functions
 export async function cacheUserProfile(user: User): Promise<void> {
-  // Only cache essential fields for profile browsing
+  // Cache all fields needed for profile rendering
   const userCache = {
     id: user.id,
     name: user.name,
+    description: user.description || '',
     avatarUrl: user.avatarUrl || '',
-    location: user.location,
-    currentRole: user.currentRole,
-    workingStyle: user.workingStyle,
-    // Add other fields as needed
+    location: user.location || '',
+    personalityTags: JSON.stringify(user.personalityTags || []),
+    workingStyle: user.workingStyle || '',
+    collaborationPref: user.collaborationPref || '',
+    currentRole: user.currentRole || '',
+    yearsExperience: user.yearsExperience?.toString() || '0',
+    domainExpertise: JSON.stringify(user.domainExpertise || []),
+    skills: JSON.stringify(user.skills || []),
+    // Handle nested objects
+    pastProjects: JSON.stringify(user.pastProjects || []),
+    startupInfo: user.startupInfo ? JSON.stringify(user.startupInfo) : null,
+    contactInfo: user.contactInfo ? JSON.stringify(user.contactInfo) : null,
   };
   
   await redisClient.hSet(`user:${user.id}`, userCache);
   await redisClient.expire(`user:${user.id}`, DEFAULT_TTL.USER_PROFILE);
 }
-
 export async function getCachedUserProfile(userId: string): Promise<Record<string, string> | null> {
   const cachedUser = await redisClient.hGetAll(`user:${userId}`);
   return Object.keys(cachedUser).length > 0 ? cachedUser : null;

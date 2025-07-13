@@ -6,7 +6,12 @@ import prismaClient from '@/lib/prsimadb';
 import { z } from 'zod';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { 
-  getViewedProfiles, 
+  getViewedProfiles,
+  cacheUserProfile,
+  getCachedUserProfile,
+  setValue,
+  getValue,
+  redisClient
 } from '@/lib/redis';
 
 // Define the request body schema for user creation
@@ -130,14 +135,53 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const params = Object.fromEntries(searchParams.entries());
     
-    
     // Add caching headers for browser and CDN caching
     const headers = new Headers();
-    headers.set('Cache-Control', 'public, max-age=300, s-maxage=600'); // Cache for 5 minutes browser, 10 minutes CDN
+    headers.set('Cache-Control', 'public, max-age=60, s-maxage=120'); // Cache for 1 minute browser, 2 minutes CDN
     headers.set('Vary', 'Accept, Cookie, X-User-ID'); // Vary cache by these headers
     
     // Validate filters
     const validatedFilters = filterSchema.parse(params);
+    
+    // Create a cache key based on filter parameters WITHOUT pagination
+    // This allows us to reuse the same cached results for different pages
+    const filterParams = { ...validatedFilters };
+    delete filterParams.page; // Remove page for caching full result set
+    delete filterParams.pageSize; // Remove page size for caching full result set
+    
+    const cacheKey = `users:fullset:${JSON.stringify(filterParams)}`;
+    
+    // Try to get full result set from Redis cache first
+    const cachedFullResults = await getValue(cacheKey);
+    
+    if (cachedFullResults) {
+      console.log('Cache hit: Returning cached user results');
+      
+      // Parse the full cached results
+      const fullResults = JSON.parse(cachedFullResults);
+      
+      // Calculate pagination for the requested page
+      const startIndex = (validatedFilters.page - 1) * validatedFilters.pageSize;
+      const endIndex = startIndex + validatedFilters.pageSize;
+      
+      // Slice the cached results to get the requested page
+      const pagedUsers = fullResults.users.slice(startIndex, endIndex);
+      
+      // Return the paginated results from cache
+      const responseData = {
+        users: pagedUsers,
+        pagination: {
+          page: validatedFilters.page,
+          pageSize: validatedFilters.pageSize,
+          totalCount: fullResults.pagination.totalCount,
+          totalPages: Math.ceil(fullResults.pagination.totalCount / validatedFilters.pageSize)
+        }
+      };
+      
+      return NextResponse.json(responseData, { headers });
+    }
+    
+    console.log('Cache miss: Fetching users from database');
     
     // Get the user's viewed profiles from the database
     let viewedProfiles: string[] = [];
@@ -180,11 +224,10 @@ export async function GET(req: NextRequest) {
       },
       include: {
         contactInfo: true,
-        pastProjects: true,  // Use pastProjects instead of projects
+        pastProjects: true,
         startupInfo: true,
       },
-      skip: (validatedFilters.page - 1) * validatedFilters.pageSize,
-      take: validatedFilters.pageSize,
+      // No pagination parameters here to get the full dataset
     };
     
     // Apply skill filters if provided
@@ -230,24 +273,47 @@ export async function GET(req: NextRequest) {
       };
     }
     
-    // Execute the query
-    const users = await prismaClient.user.findMany(query);
+    // Execute the query to get ALL matching users (without pagination)
+    const allUsers = await prismaClient.user.findMany(query);
+    
+    // Cache individual user profiles in Redis
+    for (const user of allUsers) {
+      await cacheUserProfile(user);
+    }
     
     // Get current user's skills for similarity calculation if needed
     let currentUserSkills: string[] = [];
     if (validatedFilters.skills.length > 0) {
-      const currentUser = await prismaClient.user.findUnique({
-        where: { id: validatedFilters.userId },
-        select: { skills: true }
-      });
+      // Try to get current user from Redis first
+      const cachedCurrentUser = await getCachedUserProfile(validatedFilters.userId);
       
-      if (currentUser) {
-        currentUserSkills = currentUser.skills;
+      if (cachedCurrentUser && cachedCurrentUser.skills) {
+        try {
+          currentUserSkills = JSON.parse(cachedCurrentUser.skills);
+        } catch (e) {
+          console.error('Error parsing cached skills:', e);
+        }
+      }
+      
+      // Fall back to database if not in cache
+      if (currentUserSkills.length === 0) {
+        const currentUser = await prismaClient.user.findUnique({
+          where: { id: validatedFilters.userId },
+          select: { skills: true }
+        });
+        
+        if (currentUser) {
+          currentUserSkills = currentUser.skills;
+          // Update cache for future requests
+          if (cachedCurrentUser) {
+            await redisClient.hSet(`user:${validatedFilters.userId}`, 'skills', JSON.stringify(currentUserSkills));
+          }
+        }
       }
     }
     
     // Process users with additional filters and scoring
-    let processedUsers = [...users];
+    let processedUsers = [...allUsers];
     
     // Apply location-based filtering if enabled and coordinates are provided
     if (validatedFilters.enableLocationBasedMatching && 
@@ -297,11 +363,6 @@ export async function GET(req: NextRequest) {
       });
     }
     
-    // Get total count for pagination (count remaining matches)
-    const totalCount = await prismaClient.user.count({
-      where: query.where
-    });
-    
     // Format the response
     const formattedUsers = processedUsers.map(user => {
       return {
@@ -330,16 +391,35 @@ export async function GET(req: NextRequest) {
       };
     });
     
-    // Return response with caching headers
-    return NextResponse.json({
+    // Create the full result set for caching
+    const fullResultSet = {
       users: formattedUsers,
+      pagination: {
+        totalCount: formattedUsers.length
+      }
+    };
+    
+    // Cache the FULL result set in Redis with 60-second TTL
+    await setValue(cacheKey, JSON.stringify(fullResultSet), 60);
+    
+    // Now paginate for the current request
+    const startIndex = (validatedFilters.page - 1) * validatedFilters.pageSize;
+    const endIndex = startIndex + validatedFilters.pageSize;
+    const pagedUsers = formattedUsers.slice(startIndex, endIndex);
+    
+    // Create the paginated response
+    const responseData = {
+      users: pagedUsers,
       pagination: {
         page: validatedFilters.page,
         pageSize: validatedFilters.pageSize,
-        totalCount,
-        totalPages: Math.ceil(totalCount / validatedFilters.pageSize)
+        totalCount: formattedUsers.length,
+        totalPages: Math.ceil(formattedUsers.length / validatedFilters.pageSize)
       }
-    }, { headers });
+    };
+    
+    // Return response with caching headers
+    return NextResponse.json(responseData, { headers });
     
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -372,12 +452,19 @@ export async function POST(request: Request) {
 
     const id = validatedData.id;
 
-    // Check if user already exists
-    const existingUser = await prismaClient.user.findUnique({
-      where: { id : id }
-    });
+    // Check if user already exists - try Redis first for a faster check
+    const cachedUser = await getCachedUserProfile(id);
+    let userExists = cachedUser !== null;
+    
+    // If not found in Redis, check the database
+    if (!userExists) {
+      const existingUser = await prismaClient.user.findUnique({
+        where: { id }
+      });
+      userExists = existingUser !== null;
+    }
 
-    if (existingUser) {
+    if (userExists) {
       // Return error if user already exists
       return NextResponse.json({ 
         error: 'User already exists', 
@@ -452,6 +539,18 @@ export async function POST(request: Request) {
         return createdUser;
       });
 
+      // Cache the new user in Redis
+      await cacheUserProfile(user);
+      
+      // Invalidate any related user list caches (both per-page and full set caches)
+      const cachePatterns = ['users:*', 'users:fullset:*'];
+      for (const pattern of cachePatterns) {
+        const keys = await redisClient.keys(pattern);
+        if (keys.length > 0) {
+          await redisClient.del(keys);
+        }
+      }
+      
       return NextResponse.json(user, { status: 201 });
     } catch (dbError) {
       console.error('Database operation error:', dbError);

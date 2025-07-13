@@ -317,19 +317,11 @@ export function useProfileFiltering(filters: FilterOptions) {
       fetchUsers(false);
     }
   }, [currentIndex, fetchUsers, filteredUsers.length, hasMore, isLoading]);
-  
-  // Mark profile as viewed when changing index
-  useEffect(() => {
-    if (!filteredUsers[currentIndex]?.id || !clerkUser?.id) return;
-    
-    // Only mark as viewed if user spends at least 5 seconds on a profile
-    const timer = setTimeout(() => {
-      markProfileViewed(filteredUsers[currentIndex].id);
-    }, 60000);
-    
-    // Clear the timer if the user changes profiles before the delay
-    return () => clearTimeout(timer);
-  }, [currentIndex, filteredUsers, clerkUser?.id, markProfileViewed]);
+
+  const viewCurrentProfile = useCallback(() => {
+  if (!filteredUsers[currentIndex]?.id || !clerkUser?.id) return;
+  markProfileViewed(filteredUsers[currentIndex].id);
+}, [currentIndex, filteredUsers, clerkUser?.id, markProfileViewed]);
   
   return {
     filteredUsers,
@@ -344,6 +336,7 @@ export function useProfileFiltering(filters: FilterOptions) {
     hasMore,
     resetViewedProfiles,
     refreshFilteredUsers, // Export the refresh function
-    viewedProfileIds // Export viewed profile IDs for additional client-side filtering if needed
+    viewedProfileIds, // Export viewed profile IDs for additional client-side filtering if needed
+    viewCurrentProfile
   }
 }

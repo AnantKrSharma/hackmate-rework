@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prismaClient from '@/lib/prsimadb';
 import { z } from 'zod';
 import { getAuth } from '@clerk/nextjs/server';
+import { addViewedProfile, getViewedProfiles, resetViewedProfiles, isProfileViewed } from '@/lib/redis';
 
 // Schema for marking profile as viewed
 const viewProfileSchema = z.object({
@@ -26,12 +27,25 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
     
-    // Get viewed profiles from the database
+    // Try to get from Redis first (faster)
+    const viewedIds = await getViewedProfiles(userId);
+    
+    // If we have data in Redis, return it immediately
+    if (viewedIds && viewedIds.length > 0) {
+      return NextResponse.json({ viewedProfiles: viewedIds.map(id => ({ userBId: id })) });
+    }
+    
+    // Fall back to database if Redis doesn't have the data
     const viewedProfiles = await prismaClient.view.findMany({
       where: {
         userAId: userId,
       },
     });
+    
+    // Cache the results in Redis for future requests
+    for (const profile of viewedProfiles) {
+      await addViewedProfile(userId, profile.userBId);
+    }
     
     return NextResponse.json({ viewedProfiles });
   } catch (error) {
@@ -60,22 +74,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
     
-    // Check if view already exists
-    const existingView = await prismaClient.view.findFirst({
-      where: {
-        userAId: userId,
-        userBId: viewedId,
-      },
-    });
+    // Check Redis first for faster response
+    const alreadyViewed = await isProfileViewed(userId, viewedId);
     
-    // If view doesn't exist, create it
-    if (!existingView) {
-      await prismaClient.view.create({
-        data: {
+    if (!alreadyViewed) {
+      // Add to Redis first (faster operation)
+      await addViewedProfile(userId, viewedId);
+      
+      // Check if view already exists in database
+      const existingView = await prismaClient.view.findFirst({
+        where: {
           userAId: userId,
           userBId: viewedId,
         },
       });
+      
+      // If view doesn't exist in database, create it
+      if (!existingView) {
+        await prismaClient.view.create({
+          data: {
+            userAId: userId,
+            userBId: viewedId,
+          },
+        });
+      }
     }
     
     return NextResponse.json({ success: true });
@@ -91,6 +113,42 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json(
       { error: 'Failed to mark profile as viewed', message: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE handler for resetting viewed profiles
+export async function DELETE(req: NextRequest) {
+  try {
+    const { userId } = getAuth(req);
+    const body = await req.json();
+    
+    // Check authentication
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    // Verify the requested user ID matches the authenticated user
+    if (body.userId && body.userId !== userId) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
+    }
+    
+    // Clear from Redis first (faster operation)
+    await resetViewedProfiles(userId);
+    
+    // Then clear from database
+    await prismaClient.view.deleteMany({
+      where: {
+        userAId: userId,
+      },
+    });
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error resetting viewed profiles:', error);
+    return NextResponse.json(
+      { error: 'Failed to reset viewed profiles', message: (error as Error).message },
       { status: 500 }
     );
   }
